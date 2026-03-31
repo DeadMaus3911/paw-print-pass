@@ -68,7 +68,7 @@ const AccountsPanel: React.FC = () => {
                 else if (d !== '') handleDigit(String(d));
               }}
               disabled={d === ''}
-              className={`h-14 rounded-lg text-lg font-bold transition-colors ${
+              className={`h-14 rounded-none text-lg font-bold transition-colors ${
                 d === ''
                   ? 'invisible'
                   : 'bg-card shadow-card text-foreground hover:bg-muted active:bg-secondary'
@@ -84,7 +84,7 @@ const AccountsPanel: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-center gap-2">
+      <div className="rounded-none bg-destructive/10 border border-destructive/30 p-3 flex items-center gap-2">
         <span className="text-destructive text-lg">⚠️</span>
         <span className="text-sm font-medium text-destructive">
           Vertrouwelijk — deel deze pagina niet via schermopnames
@@ -92,7 +92,7 @@ const AccountsPanel: React.FC = () => {
       </div>
 
       {PLACEHOLDER_VAULT.map(entry => (
-        <div key={entry.service} className="rounded-lg bg-card shadow-card p-4 space-y-2">
+        <div key={entry.service} className="rounded-none bg-card shadow-card p-4 space-y-2">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{entry.icon}</span>
             <h3 className="font-bold text-foreground">{entry.service}</h3>
@@ -107,7 +107,7 @@ const AccountsPanel: React.FC = () => {
 
       <button
         onClick={() => { setUnlocked(false); setPin(''); }}
-        className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        className="px-4 py-2 rounded-none bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
       >
         🔒 Vergrendelen
       </button>

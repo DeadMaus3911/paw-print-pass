@@ -32,10 +32,10 @@
     --input: 160 15% 88%;
     --ring: 168 75% 20%;
 
-    --radius: 0.75rem;
+    --radius: 0px;
 
     --shadow-card: 0 2px 8px rgba(13, 90, 77, 0.1);
-    --radius-panel: 1.125rem;
+    --radius-panel: 0px;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
