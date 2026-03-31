@@ -78,7 +78,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 rounded-none animate-confetti"
+              className="absolute w-2 h-2 rounded-full animate-confetti"
               style={{
                 background: ['#8abd24', '#0d5a4d', '#e83f4b', '#a2c4ba', '#ffd700'][i % 5],
                 left: `${50 + (Math.random() - 0.5) * 60}%`,

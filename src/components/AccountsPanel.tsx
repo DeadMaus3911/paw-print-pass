@@ -51,7 +51,7 @@ const AccountsPanel: React.FC = () => {
           {[0, 1, 2, 3].map(i => (
             <div
               key={i}
-              className={`w-4 h-4 rounded-none transition-colors ${
+              className={`w-4 h-4 rounded-full transition-colors ${
                 i < pin.length
                   ? error ? 'bg-destructive' : 'bg-primary'
                   : 'bg-muted'
