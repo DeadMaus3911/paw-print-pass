@@ -14,7 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      overdracht_items: {
+        Row: {
+          checked_by: string | null
+          checked_date: string | null
+          done: boolean
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          checked_by?: string | null
+          checked_date?: string | null
+          done?: boolean
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          checked_by?: string | null
+          checked_date?: string | null
+          done?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
