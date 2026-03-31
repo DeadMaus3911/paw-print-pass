@@ -19,9 +19,9 @@ const Header: React.FC<HeaderProps> = ({ xp, progress, levelLabel }) => {
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <span className="text-xs font-semibold">{xp} XP · {levelLabel}</span>
-          <div className="w-32 h-2.5 bg-primary-foreground/20 rounded-full overflow-hidden">
+          <div className="w-32 h-2.5 bg-primary-foreground/20 rounded-none overflow-hidden">
             <div
-              className="h-full bg-accent rounded-full transition-all duration-500"
+              className="h-full bg-accent rounded-none transition-all duration-500"
               style={{ width: `${Math.min(progress, 100)}%` }}
             />
           </div>

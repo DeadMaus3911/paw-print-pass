@@ -31,7 +31,7 @@ const Index: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-panel text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-none text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground shadow-card'
                   : 'bg-card text-muted-foreground hover:bg-muted shadow-card'

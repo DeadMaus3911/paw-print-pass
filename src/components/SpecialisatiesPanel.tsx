@@ -26,7 +26,7 @@ const SpecialisatiesPanel: React.FC = () => {
   return (
     <div className="space-y-4">
       {PLACEHOLDER_SPECIALTIES.map(spec => (
-        <div key={spec.title} className="rounded-lg bg-card shadow-card p-5 space-y-3">
+        <div key={spec.title} className="rounded-none bg-card shadow-card p-5 space-y-3">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{spec.icon}</span>
             <h3 className="font-bold text-foreground">{spec.title}</h3>
@@ -43,7 +43,7 @@ const SpecialisatiesPanel: React.FC = () => {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-medium text-muted-foreground">Betrokken:</span>
             {spec.involved.map(name => (
-              <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">
+              <span key={name} className="text-xs px-2 py-0.5 rounded-none bg-secondary text-secondary-foreground font-medium">
                 {name}
               </span>
             ))}

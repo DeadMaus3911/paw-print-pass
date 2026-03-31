@@ -78,7 +78,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 rounded-full animate-confetti"
+              className="absolute w-2 h-2 rounded-none animate-confetti"
               style={{
                 background: ['#8abd24', '#0d5a4d', '#e83f4b', '#a2c4ba', '#ffd700'][i % 5],
                 left: `${50 + (Math.random() - 0.5) * 60}%`,
@@ -91,15 +91,15 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
       )}
 
       {/* Farewell note */}
-      <div className="rounded-lg bg-card shadow-card p-4 border-l-4 border-accent">
+      <div className="rounded-none bg-card shadow-card p-4 border-l-4 border-accent">
         <p className="text-sm text-foreground">
           <strong>Beste collega's,</strong> bedankt voor de samenwerking. In dit document vinden jullie alles wat nodig is voor een soepele overdracht. Succes! — Maurice
         </p>
       </div>
 
       {/* User bar */}
-      <div className="flex items-center gap-3 rounded-lg bg-card shadow-card p-3">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${userName ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+      <div className="flex items-center gap-3 rounded-none bg-card shadow-card p-3">
+        <div className={`w-10 h-10 rounded-none flex items-center justify-center text-sm font-bold ${userName ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
           {initials}
         </div>
         <input
@@ -119,7 +119,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
           { label: 'Streak', value: `🔥 ${streak}` },
           { label: 'XP', value: xp },
         ].map(stat => (
-          <div key={stat.label} className="rounded-lg bg-card shadow-card p-3 text-center">
+          <div key={stat.label} className="rounded-none bg-card shadow-card p-3 text-center">
             <div className="text-xl font-bold text-foreground">{stat.value}</div>
             <div className="text-xs text-muted-foreground">{stat.label}</div>
           </div>
@@ -132,7 +132,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
               activeCategory === cat
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-secondary'
@@ -148,7 +148,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
         {filteredItems.map(item => (
           <div
             key={item.id}
-            className={`rounded-lg shadow-card p-4 transition-colors ${
+            className={`rounded-none shadow-card p-4 transition-colors ${
               item.done ? 'bg-secondary/50' : 'bg-card'
             }`}
           >
@@ -165,7 +165,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                     {item.title}
                   </span>
                   {item.deadline && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    <span className={`text-xs px-2 py-0.5 rounded-none font-medium ${
                       isExpired(item.deadline)
                         ? 'bg-destructive text-destructive-foreground'
                         : 'bg-accent text-accent-foreground'
@@ -184,7 +184,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
               {!item.done && (
                 <button
                   onClick={() => handleToggle(item.id, false)}
-                  className="shrink-0 text-xs px-3 py-1.5 rounded-full bg-accent text-accent-foreground font-medium hover:opacity-90 transition-opacity"
+                  className="shrink-0 text-xs px-3 py-1.5 rounded-none bg-accent text-accent-foreground font-medium hover:opacity-90 transition-opacity"
                 >
                   Ik pak dit op
                 </button>
