@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { OverdrachtItem, MILESTONES, MilestoneData, getCategoryProgress } from '@/hooks/useOverdracht';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import AddTaskModal from './AddTaskModal';
 
 const DOG_EMOJIS = ['🐶', '🐕', '🦮', '🐩', '🐕‍🦺'];
