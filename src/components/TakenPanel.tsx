@@ -177,6 +177,19 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
     }
   }, [toggleItem, doneCount, spawnDogEmoji, spawnConfetti, showToast, checkMilestone]);
 
+  const toggleExpanded = useCallback((id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const getSubItems = useCallback((item: OverdrachtItem) => {
+    if (!item.subCategory) return [];
+    return items.filter(i => i.category === item.subCategory);
+  }, [items]);
+
   const isExpired = (deadline?: string) => {
     if (!deadline) return false;
     return new Date(deadline) < new Date();
