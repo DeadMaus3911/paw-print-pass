@@ -13,6 +13,7 @@ export interface OverdrachtItem {
   priority?: string;
   involved?: string;
   custom?: boolean;
+  subCategory?: string;
 }
 
 const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
