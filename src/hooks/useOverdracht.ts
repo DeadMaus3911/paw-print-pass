@@ -139,6 +139,14 @@ const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
     description: 'Give away actie opzetten voor PC en VC kanalen.',
     done: false,
   },
+  {
+    id: 'task-padel',
+    category: 'Projecten en opdrachten',
+    title: 'Padel maandelijks inplannen',
+    description: 'Padel maandelijks volhouden en inplannen. Betrokken: Robert, Laura en Arjan.',
+    involved: 'Robert, Laura, Arjan',
+    done: false,
+  },
 ];
 
 export interface Level {
