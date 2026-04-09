@@ -14,26 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      overdracht_contacten: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          initials: string | null
+          name: string
+          note: string | null
+          org: string | null
+          phone: string | null
+          tag: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          initials?: string | null
+          name: string
+          note?: string | null
+          org?: string | null
+          phone?: string | null
+          tag?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          initials?: string | null
+          name?: string
+          note?: string | null
+          org?: string | null
+          phone?: string | null
+          tag?: string | null
+        }
+        Relationships: []
+      }
       overdracht_items: {
         Row: {
+          category: string | null
           checked_by: string | null
           checked_date: string | null
+          custom: boolean | null
+          deadline: string | null
+          description: string | null
           done: boolean
           id: string
+          involved: string | null
+          priority: string | null
+          title: string | null
           updated_at: string
         }
         Insert: {
+          category?: string | null
           checked_by?: string | null
           checked_date?: string | null
+          custom?: boolean | null
+          deadline?: string | null
+          description?: string | null
           done?: boolean
           id: string
+          involved?: string | null
+          priority?: string | null
+          title?: string | null
           updated_at?: string
         }
         Update: {
+          category?: string | null
           checked_by?: string | null
           checked_date?: string | null
+          custom?: boolean | null
+          deadline?: string | null
+          description?: string | null
           done?: boolean
           id?: string
+          involved?: string | null
+          priority?: string | null
+          title?: string | null
           updated_at?: string
         }
         Relationships: []
