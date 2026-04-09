@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { OverdrachtItem, MILESTONES, MilestoneData, getCategoryProgress } from '@/hooks/useOverdracht';
+import AddTaskModal from './AddTaskModal';
 
 const DOG_EMOJIS = ['🐶', '🐕', '🦮', '🐩', '🐕‍🦺'];
 const TOAST_MESSAGES = [
@@ -9,11 +10,12 @@ const TOAST_MESSAGES = [
   { msg: 'Zo gaat dat!', emoji: '🐩' },
 ];
 const CONFETTI_COLORS = ['#0d5a4d', '#8abd24', '#a2c4ba', '#e83f4b', '#ffffff'];
-const CATEGORIES = ['Alle', 'Marketing'];
 
 interface TakenPanelProps {
   items: OverdrachtItem[];
   toggleItem: (id: string, done: boolean) => void;
+  updateItemField: (id: string, field: 'title' | 'description', value: string) => void;
+  addItem: (item: Omit<OverdrachtItem, 'done' | 'checked_by' | 'checked_date'>) => void;
   userName: string;
   setUserName: (n: string) => void;
   doneCount: number;
@@ -23,37 +25,72 @@ interface TakenPanelProps {
   categories: string[];
 }
 
-interface DogEmoji {
-  id: number;
-  emoji: string;
-  driftX: number;
-}
+interface DogEmoji { id: number; emoji: string; driftX: number; }
+interface ConfettiPiece { id: number; left: number; color: string; rotation: number; delay: number; isCircle: boolean; size: number; }
+interface CustomToast { id: number; msg: string; emoji: string; leaving: boolean; }
+interface MilestoneBanner { id: number; data: MilestoneData; leaving: boolean; }
 
-interface ConfettiPiece {
-  id: number;
-  left: number;
-  color: string;
-  rotation: number;
-  delay: number;
-  isCircle: boolean;
-  size: number;
-}
+const InlineEdit: React.FC<{
+  value: string;
+  onSave: (v: string) => void;
+  className?: string;
+  tag?: 'span' | 'p';
+}> = ({ value, onSave, className = '', tag = 'span' }) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saved, setSaved] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-interface CustomToast {
-  id: number;
-  msg: string;
-  emoji: string;
-  leaving: boolean;
-}
+  useEffect(() => { setDraft(value); }, [value]);
 
-interface MilestoneBanner {
-  id: number;
-  data: MilestoneData;
-  leaving: boolean;
-}
+  const handleBlur = () => {
+    setEditing(false);
+    if (draft !== value) {
+      onSave(draft);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setDraft(e.target.value);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      if (e.target.value !== value) {
+        onSave(e.target.value);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 1500);
+      }
+    }, 1000);
+  };
+
+  if (editing) {
+    const El = tag === 'p' ? 'textarea' : 'input';
+    return (
+      <span className="relative inline-flex items-center gap-1 w-full">
+        <El
+          value={draft}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          autoFocus
+          className={`${className} bg-transparent border-b border-accent outline-none w-full`}
+          {...(tag === 'p' ? { rows: 2 } : {})}
+        />
+        {saved && <span className="text-accent text-xs shrink-0">✓</span>}
+      </span>
+    );
+  }
+
+  return (
+    <span className="relative inline-flex items-center gap-1 cursor-pointer group" onClick={() => setEditing(true)}>
+      {React.createElement(tag, { className: `${className} group-hover:border-b group-hover:border-dashed group-hover:border-muted-foreground` }, draft)}
+      {saved && <span className="text-accent text-xs shrink-0">✓</span>}
+    </span>
+  );
+};
 
 const TakenPanel: React.FC<TakenPanelProps> = ({
-  items, toggleItem, userName, setUserName, doneCount, streak, xp, totalItems, categories
+  items, toggleItem, updateItemField, addItem, userName, setUserName, doneCount, streak, xp, totalItems, categories
 }) => {
   const [activeCategory, setActiveCategory] = useState('Alle');
   const [dogEmojis, setDogEmojis] = useState<DogEmoji[]>([]);
@@ -61,7 +98,10 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
   const [toasts, setToasts] = useState<CustomToast[]>([]);
   const [milestones, setMilestones] = useState<MilestoneBanner[]>([]);
   const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
   const shownMilestonesRef = useRef<Set<number>>(new Set());
+
+  const allCategories = ['Alle', ...categories];
 
   const initials = userName
     ? userName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
@@ -121,7 +161,6 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
     toggleItem(id, newDone);
 
     if (newDone) {
-      // Animate checkbox
       setAnimatingItems(prev => new Set([...prev, id]));
       setTimeout(() => setAnimatingItems(prev => {
         const next = new Set(prev);
@@ -145,44 +184,26 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
     <div className="space-y-5 relative">
       {/* Dog emoji animations */}
       {dogEmojis.map(dog => (
-        <div
-          key={dog.id}
-          className="fixed bottom-20 left-1/2 z-50 animate-dog-arc"
-          style={{
-            fontSize: '36px',
-            '--drift-x': `${dog.driftX}px`,
-          } as React.CSSProperties}
-        >
+        <div key={dog.id} className="fixed bottom-20 left-1/2 z-50 animate-dog-arc"
+          style={{ fontSize: '36px', '--drift-x': `${dog.driftX}px` } as React.CSSProperties}>
           {dog.emoji}
         </div>
       ))}
 
-      {/* Confetti from top */}
+      {/* Confetti */}
       {confettiPieces.map(piece => (
-        <div
-          key={piece.id}
-          className="fixed top-0 z-50 animate-confetti-fall"
+        <div key={piece.id} className="fixed top-0 z-50 animate-confetti-fall"
           style={{
-            left: `${piece.left}%`,
-            width: `${piece.size}px`,
-            height: `${piece.size}px`,
-            backgroundColor: piece.color,
-            borderRadius: piece.isCircle ? '50%' : '0',
-            animationDelay: `${piece.delay}s`,
-            '--confetti-rot': `${piece.rotation}deg`,
-          } as React.CSSProperties}
-        />
+            left: `${piece.left}%`, width: `${piece.size}px`, height: `${piece.size}px`,
+            backgroundColor: piece.color, borderRadius: piece.isCircle ? '50%' : '0',
+            animationDelay: `${piece.delay}s`, '--confetti-rot': `${piece.rotation}deg`,
+          } as React.CSSProperties} />
       ))}
 
-      {/* Custom toasts — right side */}
+      {/* Toasts */}
       <div className="fixed top-20 right-4 z-50 space-y-2" style={{ maxWidth: '280px' }}>
         {toasts.map(t => (
-          <div
-            key={t.id}
-            className={`bg-primary text-primary-foreground px-4 py-3 shadow-card flex items-center gap-3 ${
-              t.leaving ? 'animate-toast-out' : 'animate-toast-in'
-            }`}
-          >
+          <div key={t.id} className={`bg-primary text-primary-foreground px-4 py-3 shadow-card flex items-center gap-3 ${t.leaving ? 'animate-toast-out' : 'animate-toast-in'}`}>
             <span className="text-xl">{t.emoji}</span>
             <div>
               <div className="text-sm font-bold">{t.msg}</div>
@@ -192,14 +213,9 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
         ))}
       </div>
 
-      {/* Milestone banners */}
+      {/* Milestones */}
       {milestones.map(m => (
-        <div
-          key={m.id}
-          className={`bg-accent text-accent-foreground px-5 py-4 shadow-card flex items-center gap-4 ${
-            m.leaving ? 'animate-milestone-out' : 'animate-milestone-in'
-          }`}
-        >
+        <div key={m.id} className={`bg-accent text-accent-foreground px-5 py-4 shadow-card flex items-center gap-4 ${m.leaving ? 'animate-milestone-out' : 'animate-milestone-in'}`}>
           <span className="text-3xl">{m.data.emoji}</span>
           <div>
             <div className="font-bold text-base">{m.data.title}</div>
@@ -208,7 +224,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
         </div>
       ))}
 
-      {/* Farewell note */}
+      {/* Farewell */}
       <div className="bg-card shadow-card p-4 border-l-4 border-accent">
         <p className="text-sm text-foreground">
           <strong>Beste collega's,</strong> bedankt voor de samenwerking. In dit document vinden jullie alles wat nodig is voor een soepele overdracht. Succes! — Maurice
@@ -220,16 +236,11 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
         <div className={`w-10 h-10 flex items-center justify-center text-sm font-bold ${userName ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
           {initials}
         </div>
-        <input
-          type="text"
-          placeholder="Aftekenen als:"
-          value={userName}
-          onChange={e => setUserName(e.target.value)}
-          className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
-        />
+        <input type="text" placeholder="Aftekenen als:" value={userName} onChange={e => setUserName(e.target.value)}
+          className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground" />
       </div>
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'Overgedragen', value: doneCount },
@@ -244,80 +255,71 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
         ))}
       </div>
 
-      {/* Category filter with progress bars */}
-      <div className="flex gap-2 flex-wrap">
-        {CATEGORIES.map(cat => {
-          const catProgress = cat === 'Alle'
-            ? (totalItems > 0 ? (doneCount / totalItems) * 100 : 0)
-            : getCategoryProgress(items, cat);
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-1.5 text-sm font-medium transition-colors relative ${
-                activeCategory === cat
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-secondary'
-              }`}
-              style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
-            >
-              <span className="flex items-center gap-2">
-                {cat}
-                <span className="inline-block w-14 h-1.5 bg-primary-foreground/20 overflow-hidden">
-                  <span
-                    className="block h-full bg-accent"
-                    style={{ width: `${catProgress}%`, transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
-                  />
+      {/* Category filter + Add button */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2 flex-wrap flex-1">
+          {allCategories.map(cat => {
+            const catProgress = cat === 'Alle'
+              ? (totalItems > 0 ? (doneCount / totalItems) * 100 : 0)
+              : getCategoryProgress(items, cat);
+            return (
+              <button key={cat} onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors relative ${
+                  activeCategory === cat ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-secondary'
+                }`} style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <span className="flex items-center gap-2">
+                  {cat}
+                  <span className="inline-block w-14 h-1.5 bg-primary-foreground/20 overflow-hidden">
+                    <span className="block h-full bg-accent" style={{ width: `${catProgress}%`, transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                  </span>
                 </span>
-              </span>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
+        <button onClick={() => setTaskModalOpen(true)}
+          className="shrink-0 px-4 py-1.5 bg-accent text-accent-foreground text-sm font-medium hover:opacity-90"
+          style={{ transition: 'opacity 0.2s' }}>
+          + Taak toevoegen
+        </button>
       </div>
 
       {/* Items */}
       <div className="space-y-3">
         {filteredItems.map(item => (
-          <div
-            key={item.id}
-            className="shadow-card p-4"
+          <div key={item.id} className="shadow-card p-4"
             style={{
               backgroundColor: item.done ? 'hsl(var(--secondary) / 0.5)' : 'hsl(var(--card))',
               transition: 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
+            }}>
             <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={item.done}
-                onChange={() => handleToggle(item.id, item.done)}
-                className={`mt-1 w-5 h-5 accent-primary cursor-pointer ${
-                  animatingItems.has(item.id) ? 'animate-check-pop' : ''
-                }`}
-              />
+              <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)}
+                className={`mt-1 w-5 h-5 accent-primary cursor-pointer ${animatingItems.has(item.id) ? 'animate-check-pop' : ''}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span
+                  <InlineEdit
+                    value={item.title}
+                    onSave={v => updateItemField(item.id, 'title', v)}
                     className="font-semibold text-sm"
-                    style={{
-                      color: item.done ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
-                      textDecoration: item.done ? 'line-through' : 'none',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  >
-                    {item.title}
-                  </span>
+                    tag="span"
+                  />
                   {item.deadline && (
                     <span className={`text-xs px-2 py-0.5 font-medium ${
-                      isExpired(item.deadline)
-                        ? 'bg-destructive text-destructive-foreground'
-                        : 'bg-accent text-accent-foreground'
-                    }`}>
-                      {item.deadline}
-                    </span>
+                      isExpired(item.deadline) ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                    }`}>{item.deadline}</span>
+                  )}
+                  {item.priority && item.priority !== 'Gemiddeld' && (
+                    <span className={`text-xs px-2 py-0.5 font-medium ${
+                      item.priority === 'Hoog' ? 'bg-destructive/20 text-destructive' : 'bg-muted text-muted-foreground'
+                    }`}>{item.priority}</span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
+                <InlineEdit
+                  value={item.description}
+                  onSave={v => updateItemField(item.id, 'description', v)}
+                  className="text-xs text-muted-foreground mt-1"
+                  tag="p"
+                />
                 {item.done && item.checked_by && (
                   <p className="text-xs mt-1" style={{ color: 'hsl(var(--accent))' }}>
                     ✓ Afgetekend door {item.checked_by} op {item.checked_date}
@@ -325,11 +327,9 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                 )}
               </div>
               {!item.done && (
-                <button
-                  onClick={() => handleToggle(item.id, item.done)}
+                <button onClick={() => handleToggle(item.id, item.done)}
                   className="shrink-0 text-xs px-3 py-1.5 bg-accent text-accent-foreground font-medium hover:opacity-90"
-                  style={{ transition: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
-                >
+                  style={{ transition: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                   Ik pak dit op
                 </button>
               )}
@@ -337,6 +337,8 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
           </div>
         ))}
       </div>
+
+      <AddTaskModal open={taskModalOpen} onClose={() => setTaskModalOpen(false)} onAdd={addItem} />
     </div>
   );
 };

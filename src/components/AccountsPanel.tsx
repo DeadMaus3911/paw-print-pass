@@ -10,13 +10,27 @@ interface VaultEntry {
   notes: string;
 }
 
-const PLACEHOLDER_VAULT: VaultEntry[] = [
+const VAULT: VaultEntry[] = [
   {
     icon: '📱',
     service: 'Sprout Social',
     username: 'prins.team@prinspetfoods.nl',
     password: 'S3cur3Pass!',
     notes: 'Gedeeld team-account. MFA via Maurice\'s telefoon — moet worden overgedragen.',
+  },
+  {
+    icon: '🎨',
+    service: 'Canva',
+    username: 'maurice@prinspetfoods.nl',
+    password: 'CanvaPass!',
+    notes: 'Account gekoppeld aan Maurice. Toegang overdragen aan nieuw teamlid.',
+  },
+  {
+    icon: '🖨️',
+    service: 'HelloPrint',
+    username: 'Bedrijfsaccount Prins Petfoods',
+    password: '—',
+    notes: 'Inloggegevens al bekend bij collega\'s.',
   },
 ];
 
@@ -91,7 +105,7 @@ const AccountsPanel: React.FC = () => {
         </span>
       </div>
 
-      {PLACEHOLDER_VAULT.map(entry => (
+      {VAULT.map(entry => (
         <div key={entry.service} className="rounded-none bg-card shadow-card p-4 space-y-2">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{entry.icon}</span>
