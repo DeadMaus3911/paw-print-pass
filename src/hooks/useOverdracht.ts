@@ -13,6 +13,7 @@ export interface OverdrachtItem {
   priority?: string;
   involved?: string;
   custom?: boolean;
+  subCategory?: string;
 }
 
 const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
@@ -29,6 +30,7 @@ const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
     category: 'Projecten en opdrachten',
     title: 'Puppy & Kitten POS Materiaal',
     description: 'POS-materiaal voor Puppy & Kitten assortiment afronden en aanleveren.',
+    subCategory: 'Puppy & Kitten materialen',
     done: false,
   },
   // Puppy & Kitten sub-taken
@@ -127,6 +129,7 @@ const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
     category: 'Projecten en opdrachten',
     title: 'Gezondheidsplein Accustraat 1',
     description: 'Signing en communicatiemateriaal voor Gezondheidsplein Accustraat 1.',
+    subCategory: 'Gezondheidsplein',
     done: false,
   },
   {
