@@ -293,7 +293,7 @@ export function useOverdracht() {
           priority: item.priority || 'Gemiddeld',
           involved: item.involved || null,
           updated_at: new Date().toISOString(),
-        });
+        } as any);
     },
     []
   );
