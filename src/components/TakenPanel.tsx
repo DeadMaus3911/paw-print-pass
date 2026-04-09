@@ -123,17 +123,17 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
   }, []);
 
   const spawnConfetti = useCallback(() => {
-    const pieces: ConfettiPiece[] = Array.from({ length: 60 }, (_, i) => ({
+    const pieces: ConfettiPiece[] = Array.from({ length: 120 }, (_, i) => ({
       id: Date.now() + i,
-      left: 10 + Math.random() * 80,
+      left: 30 + Math.random() * 40,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      rotation: 360 + Math.random() * 720,
-      delay: i * 0.04,
-      isCircle: Math.random() > 0.5,
-      size: 6 + Math.random() * 4,
+      rotation: 360 + Math.random() * 1080,
+      delay: Math.random() * 0.3,
+      isCircle: Math.random() > 0.6,
+      size: 5 + Math.random() * 8,
     }));
     setConfettiPieces(pieces);
-    setTimeout(() => setConfettiPieces([]), 1400);
+    setTimeout(() => setConfettiPieces([]), 2500);
   }, []);
 
   const showToast = useCallback(() => {
