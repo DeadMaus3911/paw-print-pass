@@ -1,45 +1,21 @@
-import React from 'react';
-
-interface Specialty {
-  icon: string;
-  title: string;
-  description: string;
-  steps: string[];
-  involved: string[];
-}
-
-const SPECIALTIES: Specialty[] = [
-  {
-    icon: '📊',
-    title: 'Social Media Analytics',
-    description: 'Maandelijkse rapportage en analyse van alle social media kanalen.',
-    steps: [
-      'Login op Sprout Social met het team-account',
-      'Exporteer maandrapport onder "Reports > Custom"',
-      'Deel het rapport via Teams met het marketing team',
-    ],
-    involved: ['Jan de Vries', 'Lisa Bakker'],
-  },
-  {
-    icon: '🖨️',
-    title: 'POS en drukwerk aanleveren',
-    description: 'Regulier drukwerk gaat via HelloPrint.com. Axent Reclame is alleen voor maatwerk signing, canvassen en magneetplaten.',
-    steps: [
-      'Maak drukklare PDF aan volgens de specs van HelloPrint',
-      'Bestel via HelloPrint.com met het bedrijfsaccount',
-      'Voor maatwerk signing en canvassen: neem contact op met Gerard van Axent Reclame',
-    ],
-    involved: ['Mathieu', 'Gerard van de Bovenkamp'],
-  },
-];
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SkillCard {
+  id?: string;
   emoji: string;
   title: string;
   description: string;
+  fromDb?: boolean;
 }
 
-const SKILLS: SkillCard[] = [
+const HARDCODED_SKILLS: SkillCard[] = [
   { emoji: '🧊', title: '3D Design', description: 'Productvisualisaties, retailmockups en conceptmodellen in 3D' },
   { emoji: '🛒', title: 'Winkelcommunicatie en POS', description: 'Schapstroken, toppers, displays, vloerstickers en retailsigning' },
   { emoji: '🎬', title: 'Animatie', description: 'Motion graphics, productvideo\'s en sociale media animaties' },
@@ -54,52 +30,88 @@ const SKILLS: SkillCard[] = [
 ];
 
 const SpecialisatiesPanel: React.FC = () => {
+  const [dbSkills, setDbSkills] = useState<SkillCard[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [emoji, setEmoji] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const loadDbSkills = useCallback(async () => {
+    const { data } = await (supabase as any).from('overdracht_skills').select('*');
+    if (data) {
+      setDbSkills(data.map((s: any) => ({
+        id: s.id,
+        emoji: s.emoji || '⭐',
+        title: s.title,
+        description: s.description || '',
+        fromDb: true,
+      })));
+    }
+  }, []);
+
+  useEffect(() => { loadDbSkills(); }, [loadDbSkills]);
+
+  const handleSave = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    await (supabase as any).from('overdracht_skills').insert({
+      emoji: emoji.trim() || '⭐',
+      title: title.trim(),
+      description: description.trim() || null,
+    });
+    setSaving(false);
+    setEmoji(''); setTitle(''); setDescription('');
+    setModalOpen(false);
+    loadDbSkills();
+  };
+
+  const allSkills = [...HARDCODED_SKILLS, ...dbSkills];
+
+  const inputClass = "w-full bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none border border-border";
+
   return (
-    <div className="space-y-8">
-      {/* Werkwijzen */}
-      <div className="space-y-4">
-        {SPECIALTIES.map(spec => (
-          <div key={spec.title} className="rounded-none bg-card shadow-card p-5 space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{spec.icon}</span>
-              <h3 className="font-bold text-foreground">{spec.title}</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">{spec.description}</p>
-            <ul className="space-y-1.5">
-              {spec.steps.map((step, i) => (
-                <li key={i} className="text-sm text-foreground flex items-start gap-2">
-                  <span className="text-accent mt-0.5">→</span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-muted-foreground">Betrokken:</span>
-              {spec.involved.map(name => (
-                <span key={name} className="text-xs px-2 py-0.5 rounded-none bg-secondary text-secondary-foreground font-medium">
-                  {name}
-                </span>
-              ))}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">Mijn capaciteiten en expertise</h2>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="px-4 py-1.5 bg-accent text-accent-foreground text-sm font-medium hover:opacity-90"
+          style={{ transition: 'opacity 0.2s' }}
+        >
+          + Expertise toevoegen
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {allSkills.map((skill, idx) => (
+          <div key={skill.id || `hc-${idx}`} className="rounded-none bg-card shadow-card p-4 flex items-start gap-3">
+            <span className="text-2xl shrink-0">{skill.emoji}</span>
+            <div className="min-w-0">
+              <h4 className="font-semibold text-sm text-foreground">{skill.title}</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Capaciteiten en expertise */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-bold text-foreground">Mijn capaciteiten en expertise</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {SKILLS.map(skill => (
-            <div key={skill.title} className="rounded-none bg-card shadow-card p-4 flex items-start gap-3">
-              <span className="text-2xl shrink-0">{skill.emoji}</span>
-              <div className="min-w-0">
-                <h4 className="font-semibold text-sm text-foreground">{skill.title}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">{skill.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Dialog open={modalOpen} onOpenChange={v => !v && setModalOpen(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Expertise toevoegen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <input placeholder="Emoji (bijv. 🎯)" value={emoji} onChange={e => setEmoji(e.target.value)} className={inputClass} />
+            <input placeholder="Titel *" value={title} onChange={e => setTitle(e.target.value)} className={inputClass} />
+            <textarea placeholder="Omschrijving" value={description} onChange={e => setDescription(e.target.value)} rows={2} className={`${inputClass} resize-none`} />
+            <button onClick={handleSave} disabled={!title.trim() || saving}
+              className="w-full py-2 bg-accent text-accent-foreground font-medium text-sm hover:opacity-90 disabled:opacity-50"
+              style={{ transition: 'opacity 0.2s' }}>
+              {saving ? 'Opslaan...' : 'Opslaan'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

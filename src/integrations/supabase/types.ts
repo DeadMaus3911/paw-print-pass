@@ -95,6 +95,30 @@ export type Database = {
         }
         Relationships: []
       }
+      overdracht_skills: {
+        Row: {
+          created_at: string
+          description: string | null
+          emoji: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
