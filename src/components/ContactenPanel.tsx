@@ -27,6 +27,9 @@ const HARDCODED_CONTACTS: Contact[] = [
   { name: 'Ward', org: 'Prins Petfoods', tag: 'Intern', initials: 'WA', note: 'Controleert teksten voor flip-over Gezond met Prins.' },
   { name: 'Mathieu', org: 'Prins Petfoods', tag: 'Intern', initials: 'MA', note: 'Samenwerking gepersonaliseerde vouchercodes via HelloPrint.' },
   { name: 'Gertjan Willems', org: 'Prins Petfoods Directie', tag: 'Intern Directie', initials: 'GW', note: 'Opdrachtgever 25 export displays samen met Jasja.' },
+  { name: 'Maxine Bongaerts', org: 'Holbox Shop Direct', tag: 'Leverancier displays', initials: 'MB', email: 'shopdirect@holbox.nl', phone: '+31 (0) 475 56 95 99', note: 'Morgenstraat 1, 6045 KB Roermond. Website: shopdirect.holbox.nl' },
+  { name: 'Danique Nebbeling', org: 'Maxilia', tag: 'Accountmanager', initials: 'DN', email: 'reseller@maxilia.nl', phone: '0318 743 605' },
+  { name: 'Joost Spek', org: 'Novad', tag: '3D packshots verpakkingen', initials: 'JS', phone: '(0343) 449 407', note: 'Creative director. Website: www.novad.nl' },
 ];
 
 const ContactenPanel: React.FC = () => {
