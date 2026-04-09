@@ -30,6 +30,7 @@ const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
     category: 'Projecten en opdrachten',
     title: 'Puppy & Kitten POS Materiaal',
     description: 'POS-materiaal voor Puppy & Kitten assortiment afronden en aanleveren.',
+    subCategory: 'Puppy & Kitten materialen',
     done: false,
   },
   // Puppy & Kitten sub-taken
