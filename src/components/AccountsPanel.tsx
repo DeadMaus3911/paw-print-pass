@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const CORRECT_PIN = '1234';
+const CORRECT_PIN = '1963';
 
 interface VaultEntry {
   icon: string;
