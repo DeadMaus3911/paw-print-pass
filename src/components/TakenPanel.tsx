@@ -314,8 +314,10 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                   transition: 'background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}>
                 <div className="flex items-start gap-3">
-                  <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)}
-                    className={`mt-1 w-5 h-5 accent-primary cursor-pointer ${animatingItems.has(item.id) ? 'animate-check-pop' : ''}`} />
+                  {!hasSubItems && (
+                    <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)}
+                      className={`mt-1 w-5 h-5 accent-primary cursor-pointer ${animatingItems.has(item.id) ? 'animate-check-pop' : ''}`} />
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <InlineEdit value={item.title} onSave={v => updateItemField(item.id, 'title', v)} className="font-semibold text-sm" tag="span" />
@@ -326,7 +328,12 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                         <span className={`text-xs px-2 py-0.5 font-medium ${item.priority === 'Hoog' ? 'bg-destructive/20 text-destructive' : 'bg-muted text-muted-foreground'}`}>{item.priority}</span>
                       )}
                       {hasSubItems && (
-                        <span className="text-xs text-muted-foreground">{subDone}/{subItems.length} subtaken</span>
+                        <button onClick={() => toggleExpanded(item.id)}
+                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                          style={{ transition: 'color 0.2s' }}>
+                          {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                          {subDone}/{subItems.length} subtaken
+                        </button>
                       )}
                     </div>
                     <InlineEdit value={item.description} onSave={v => updateItemField(item.id, 'description', v)} className="text-xs text-muted-foreground mt-1" tag="p" />
@@ -335,14 +342,36 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                         ✓ Afgetekend door {item.checked_by} op {item.checked_date}
                       </p>
                     )}
+
+                    {/* Sub-tasks inside the card */}
+                    {hasSubItems && isExpanded && (
+                      <div className="mt-3 space-y-1.5 border-l-2 border-accent/30 pl-3">
+                        {subItems.map(sub => (
+                          <div key={sub.id} className="flex items-start gap-2 py-1.5"
+                            style={{ opacity: sub.done ? 0.6 : 1, transition: 'opacity 0.3s' }}>
+                            <input type="checkbox" checked={sub.done} onChange={() => handleToggle(sub.id, sub.done)}
+                              className={`mt-0.5 w-4 h-4 accent-primary cursor-pointer ${animatingItems.has(sub.id) ? 'animate-check-pop' : ''}`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <InlineEdit value={sub.title} onSave={v => updateItemField(sub.id, 'title', v)}
+                                  className={`font-medium text-xs ${sub.done ? 'line-through' : ''}`} tag="span" />
+                                {sub.deadline && (
+                                  <span className={`text-[10px] px-1.5 py-0.5 font-medium ${isExpired(sub.deadline) ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'}`}>{sub.deadline}</span>
+                                )}
+                              </div>
+                              <InlineEdit value={sub.description} onSave={v => updateItemField(sub.id, 'description', v)} className="text-xs text-muted-foreground mt-0.5" tag="p" />
+                              {sub.done && sub.checked_by && (
+                                <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--accent))' }}>
+                                  ✓ {sub.checked_by} · {sub.checked_date}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {hasSubItems && (
-                      <button onClick={() => toggleExpanded(item.id)}
-                        className="p-1 text-muted-foreground hover:text-foreground" style={{ transition: 'color 0.2s' }}>
-                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      </button>
-                    )}
                     {!item.done && !hasSubItems && (
                       <button onClick={() => handleToggle(item.id, item.done)}
                         className="text-xs px-3 py-1.5 bg-accent text-accent-foreground font-medium hover:opacity-90"
@@ -353,44 +382,6 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* Sub-tasks */}
-              {hasSubItems && isExpanded && (
-                <div className="ml-6 mt-1 space-y-1 border-l-2 border-accent/30 pl-3">
-                  {subItems.map(sub => (
-                    <div key={sub.id} className="shadow-card p-3"
-                      style={{
-                        backgroundColor: sub.done ? 'hsl(var(--secondary) / 0.5)' : 'hsl(var(--card))',
-                        transition: 'background-color 0.3s',
-                      }}>
-                      <div className="flex items-start gap-3">
-                        <input type="checkbox" checked={sub.done} onChange={() => handleToggle(sub.id, sub.done)}
-                          className={`mt-0.5 w-4 h-4 accent-primary cursor-pointer ${animatingItems.has(sub.id) ? 'animate-check-pop' : ''}`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <InlineEdit value={sub.title} onSave={v => updateItemField(sub.id, 'title', v)} className="font-semibold text-xs" tag="span" />
-                            {sub.deadline && (
-                              <span className={`text-xs px-1.5 py-0.5 font-medium ${isExpired(sub.deadline) ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'}`}>{sub.deadline}</span>
-                            )}
-                          </div>
-                          <InlineEdit value={sub.description} onSave={v => updateItemField(sub.id, 'description', v)} className="text-xs text-muted-foreground mt-0.5" tag="p" />
-                          {sub.done && sub.checked_by && (
-                            <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--accent))' }}>
-                              ✓ {sub.checked_by} · {sub.checked_date}
-                            </p>
-                          )}
-                        </div>
-                        {!sub.done && (
-                          <button onClick={() => handleToggle(sub.id, sub.done)}
-                            className="shrink-0 text-xs px-2 py-1 bg-accent text-accent-foreground font-medium hover:opacity-90">
-                            Ik pak dit op
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           );
         })}
