@@ -123,17 +123,17 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
   }, []);
 
   const spawnConfetti = useCallback(() => {
-    const pieces: ConfettiPiece[] = Array.from({ length: 60 }, (_, i) => ({
+    const pieces: ConfettiPiece[] = Array.from({ length: 120 }, (_, i) => ({
       id: Date.now() + i,
-      left: 10 + Math.random() * 80,
+      left: 30 + Math.random() * 40,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-      rotation: 360 + Math.random() * 720,
-      delay: i * 0.04,
-      isCircle: Math.random() > 0.5,
-      size: 6 + Math.random() * 4,
+      rotation: 360 + Math.random() * 1080,
+      delay: Math.random() * 0.3,
+      isCircle: Math.random() > 0.6,
+      size: 5 + Math.random() * 8,
     }));
     setConfettiPieces(pieces);
-    setTimeout(() => setConfettiPieces([]), 1400);
+    setTimeout(() => setConfettiPieces([]), 2500);
   }, []);
 
   const showToast = useCallback(() => {
@@ -209,14 +209,25 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
       ))}
 
       {/* Confetti */}
-      {confettiPieces.map(piece => (
-        <div key={piece.id} className="fixed top-0 z-50 animate-confetti-fall"
-          style={{
-            left: `${piece.left}%`, width: `${piece.size}px`, height: `${piece.size}px`,
-            backgroundColor: piece.color, borderRadius: piece.isCircle ? '50%' : '0',
-            animationDelay: `${piece.delay}s`, '--confetti-rot': `${piece.rotation}deg`,
-          } as React.CSSProperties} />
-      ))}
+      {confettiPieces.map(piece => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 150 + Math.random() * 350;
+        const driftX = Math.cos(angle) * distance;
+        const driftY = Math.sin(angle) * distance - 200;
+        return (
+          <div key={piece.id} className="fixed z-50 animate-confetti-fall"
+            style={{
+              top: '50%', left: '50%',
+              width: `${piece.size}px`, height: piece.isCircle ? `${piece.size}px` : `${piece.size * 2.5}px`,
+              backgroundColor: piece.color,
+              borderRadius: piece.isCircle ? '50%' : '2px',
+              animationDelay: `${piece.delay}s`,
+              '--confetti-rot': `${piece.rotation}deg`,
+              '--drift-x': `${driftX}px`,
+              '--drift-y': `${driftY}px`,
+            } as React.CSSProperties} />
+        );
+      })}
 
       {/* Toasts */}
       <div className="fixed top-20 right-4 z-50 space-y-2" style={{ maxWidth: '280px' }}>

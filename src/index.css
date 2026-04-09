@@ -90,20 +90,37 @@
   pointer-events: none;
 }
 
-/* Confetti fall from top */
-@keyframes confetti-fall {
+/* Confetti explosion from center */
+@keyframes confetti-explode {
   0% {
-    transform: translateY(-20px) rotate(0deg) scale(1);
+    transform: translate(0, 0) rotate(0deg) scale(0);
     opacity: 1;
   }
+  10% {
+    opacity: 1;
+    transform: translate(
+      calc(var(--drift-x, 0) * 0.3),
+      calc(var(--drift-y, 0) * 0.3)
+    ) rotate(calc(var(--confetti-rot, 720deg) * 0.2)) scale(1.2);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(
+      var(--drift-x, 0),
+      var(--drift-y, 0)
+    ) rotate(calc(var(--confetti-rot, 720deg) * 0.6)) scale(1);
+  }
   100% {
-    transform: translateY(calc(100vh + 20px)) rotate(var(--confetti-rot, 720deg)) scale(0.6);
     opacity: 0;
+    transform: translate(
+      calc(var(--drift-x, 0) * 1.2),
+      calc(var(--drift-y, 0) + 200px)
+    ) rotate(var(--confetti-rot, 720deg)) scale(0.4);
   }
 }
 
 .animate-confetti-fall {
-  animation: confetti-fall 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: confetti-explode 2s cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
   pointer-events: none;
 }
 
