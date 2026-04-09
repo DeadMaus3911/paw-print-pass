@@ -55,7 +55,7 @@ const SpecialisatiesPanel: React.FC = () => {
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await supabase.from('overdracht_skills').insert({
+    await (supabase as any).from('overdracht_skills').insert({
       emoji: emoji.trim() || '⭐',
       title: title.trim(),
       description: description.trim() || null,
