@@ -265,7 +265,7 @@ export function useOverdracht() {
           id,
           [field]: value,
           updated_at: new Date().toISOString(),
-        });
+        } as any);
     },
     []
   );
