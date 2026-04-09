@@ -209,14 +209,25 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
       ))}
 
       {/* Confetti */}
-      {confettiPieces.map(piece => (
-        <div key={piece.id} className="fixed top-0 z-50 animate-confetti-fall"
-          style={{
-            left: `${piece.left}%`, width: `${piece.size}px`, height: `${piece.size}px`,
-            backgroundColor: piece.color, borderRadius: piece.isCircle ? '50%' : '0',
-            animationDelay: `${piece.delay}s`, '--confetti-rot': `${piece.rotation}deg`,
-          } as React.CSSProperties} />
-      ))}
+      {confettiPieces.map(piece => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 150 + Math.random() * 350;
+        const driftX = Math.cos(angle) * distance;
+        const driftY = Math.sin(angle) * distance - 200;
+        return (
+          <div key={piece.id} className="fixed z-50 animate-confetti-fall"
+            style={{
+              top: '50%', left: '50%',
+              width: `${piece.size}px`, height: piece.isCircle ? `${piece.size}px` : `${piece.size * 2.5}px`,
+              backgroundColor: piece.color,
+              borderRadius: piece.isCircle ? '50%' : '2px',
+              animationDelay: `${piece.delay}s`,
+              '--confetti-rot': `${piece.rotation}deg`,
+              '--drift-x': `${driftX}px`,
+              '--drift-y': `${driftY}px`,
+            } as React.CSSProperties} />
+        );
+      })}
 
       {/* Toasts */}
       <div className="fixed top-20 right-4 z-50 space-y-2" style={{ maxWidth: '280px' }}>
