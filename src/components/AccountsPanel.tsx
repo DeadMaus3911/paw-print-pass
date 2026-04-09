@@ -97,9 +97,8 @@ const VAULT: VaultEntry[] = [
   },
 ];
 
-const AccountsPanel: React.FC = () => {
+const PinPad: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
   const [pin, setPin] = useState('');
-  const [unlocked, setUnlocked] = useState(false);
   const [error, setError] = useState(false);
 
   const handleDigit = (d: string) => {
@@ -109,7 +108,7 @@ const AccountsPanel: React.FC = () => {
     setError(false);
     if (newPin.length === 4) {
       if (newPin === CORRECT_PIN) {
-        setUnlocked(true);
+        onSuccess();
       } else {
         setError(true);
         setTimeout(() => { setPin(''); setError(false); }, 800);
@@ -119,42 +118,89 @@ const AccountsPanel: React.FC = () => {
 
   const handleDelete = () => setPin(p => p.slice(0, -1));
 
+  return (
+    <div className="flex flex-col items-center justify-center py-8 space-y-5">
+      <div className="text-3xl">🔒</div>
+      <h3 className="font-bold text-foreground text-base">Voer PIN in</h3>
+      <div className="flex gap-3">
+        {[0, 1, 2, 3].map(i => (
+          <div
+            key={i}
+            className={`w-4 h-4 rounded-full transition-colors ${
+              i < pin.length
+                ? error ? 'bg-destructive' : 'bg-primary'
+                : 'bg-muted'
+            }`}
+          />
+        ))}
+      </div>
+      <div className="grid grid-cols-3 gap-3 w-56">
+        {['1','2','3','4','5','6','7','8','9','',0,'⌫'].map((d, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              if (d === '⌫') handleDelete();
+              else if (d !== '') handleDigit(String(d));
+            }}
+            disabled={d === ''}
+            className={`h-14 rounded-none text-lg font-bold transition-colors ${
+              d === ''
+                ? 'invisible'
+                : 'bg-card shadow-card text-foreground hover:bg-muted active:bg-secondary'
+            }`}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AccountsPanel: React.FC = () => {
+  const [unlocked, setUnlocked] = useState(false);
+  const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
+  const [pendingReveal, setPendingReveal] = useState<string | null>(null);
+
+  const handleRevealPassword = (service: string) => {
+    if (revealedPasswords.has(service)) {
+      // Hide it again
+      setRevealedPasswords(prev => {
+        const next = new Set(prev);
+        next.delete(service);
+        return next;
+      });
+    } else {
+      setPendingReveal(service);
+    }
+  };
+
+  const handlePinSuccess = () => {
+    if (pendingReveal) {
+      setRevealedPasswords(prev => new Set(prev).add(pendingReveal));
+      setPendingReveal(null);
+    } else {
+      setUnlocked(true);
+    }
+  };
+
   if (!unlocked) {
+    return <PinPad onSuccess={handlePinSuccess} />;
+  }
+
+  if (pendingReveal) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-6">
-        <div className="text-4xl">🔒</div>
-        <h3 className="font-bold text-foreground text-lg">Voer PIN in</h3>
-        <div className="flex gap-3">
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              className={`w-4 h-4 rounded-full transition-colors ${
-                i < pin.length
-                  ? error ? 'bg-destructive' : 'bg-primary'
-                  : 'bg-muted'
-              }`}
-            />
-          ))}
-        </div>
-        <div className="grid grid-cols-3 gap-3 w-56">
-          {['1','2','3','4','5','6','7','8','9','',0,'⌫'].map((d, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                if (d === '⌫') handleDelete();
-                else if (d !== '') handleDigit(String(d));
-              }}
-              disabled={d === ''}
-              className={`h-14 rounded-none text-lg font-bold transition-colors ${
-                d === ''
-                  ? 'invisible'
-                  : 'bg-card shadow-card text-foreground hover:bg-muted active:bg-secondary'
-              }`}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
+      <div className="space-y-4">
+        <button
+          onClick={() => setPendingReveal(null)}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Terug
+        </button>
+        <p className="text-sm text-center text-muted-foreground">
+          Voer PIN in om wachtwoord van <strong>{pendingReveal}</strong> te zien
+        </p>
+        <PinPad onSuccess={handlePinSuccess} />
       </div>
     );
   }
@@ -176,14 +222,27 @@ const AccountsPanel: React.FC = () => {
           </div>
           <div className="text-sm space-y-1 text-muted-foreground">
             <div><span className="font-medium text-foreground">Gebruiker:</span> {entry.username}</div>
-            <div><span className="font-medium text-foreground">Wachtwoord:</span> <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{entry.password}</code></div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-foreground">Wachtwoord:</span>
+              {revealedPasswords.has(entry.service) ? (
+                <code className="bg-muted px-1.5 py-0.5 rounded text-xs">{entry.password}</code>
+              ) : (
+                <span className="text-xs">••••••••</span>
+              )}
+              <button
+                onClick={() => handleRevealPassword(entry.service)}
+                className="text-xs text-primary hover:underline ml-1"
+              >
+                {revealedPasswords.has(entry.service) ? '🙈 Verberg' : '👁️ Toon'}
+              </button>
+            </div>
             <div><span className="font-medium text-foreground">Notitie:</span> {entry.notes}</div>
           </div>
         </div>
       ))}
 
       <button
-        onClick={() => { setUnlocked(false); setPin(''); }}
+        onClick={() => { setUnlocked(false); setRevealedPasswords(new Set()); }}
         className="px-4 py-2 rounded-none bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
       >
         🔒 Vergrendelen
