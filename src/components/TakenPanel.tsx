@@ -109,7 +109,10 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
     ? userName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-  const filteredItems = activeCategory === 'Alle' ? items : items.filter(i => i.category === activeCategory);
+  // Collect all subCategory values so we can exclude sub-items from the main list
+  const subCategorySet = new Set(items.filter(i => i.subCategory).map(i => i.subCategory!));
+  const mainItems = items.filter(i => !subCategorySet.has(i.category));
+  const filteredItems = activeCategory === 'Alle' ? mainItems : mainItems.filter(i => i.category === activeCategory);
 
   const spawnDogEmoji = useCallback(() => {
     const emoji = DOG_EMOJIS[Math.floor(Math.random() * DOG_EMOJIS.length)];
