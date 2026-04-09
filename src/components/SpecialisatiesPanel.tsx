@@ -38,7 +38,7 @@ const SpecialisatiesPanel: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   const loadDbSkills = useCallback(async () => {
-    const { data } = await supabase.from('overdracht_skills').select('*');
+    const { data } = await (supabase as any).from('overdracht_skills').select('*');
     if (data) {
       setDbSkills(data.map((s: any) => ({
         id: s.id,
