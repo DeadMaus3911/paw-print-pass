@@ -123,7 +123,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
   }, []);
 
   const spawnConfetti = useCallback(() => {
-    const pieces: ConfettiPiece[] = Array.from({ length: 20 }, (_, i) => ({
+    const pieces: ConfettiPiece[] = Array.from({ length: 60 }, (_, i) => ({
       id: Date.now() + i,
       left: 10 + Math.random() * 80,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
