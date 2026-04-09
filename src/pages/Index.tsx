@@ -30,7 +30,6 @@ const Index: React.FC = () => {
       />
 
       <main className="max-w-[860px] mx-auto px-4 py-6">
-        {/* Tabs */}
         <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
           {TABS.map(tab => (
             <button
@@ -48,11 +47,12 @@ const Index: React.FC = () => {
           ))}
         </div>
 
-        {/* Panels */}
         {activeTab === 'taken' && (
           <TakenPanel
             items={overdracht.items}
             toggleItem={overdracht.toggleItem}
+            updateItemField={overdracht.updateItemField}
+            addItem={overdracht.addItem}
             userName={overdracht.userName}
             setUserName={overdracht.setUserName}
             doneCount={overdracht.doneCount}

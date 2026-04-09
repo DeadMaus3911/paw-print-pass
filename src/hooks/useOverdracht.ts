@@ -10,15 +10,53 @@ export interface OverdrachtItem {
   done: boolean;
   checked_by?: string;
   checked_date?: string;
+  priority?: string;
+  involved?: string;
+  custom?: boolean;
 }
 
 const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
+  // Projecten en opdrachten
   {
-    id: 'task-1',
-    category: 'Marketing',
-    title: 'Campagne Q2 afronden',
-    description: 'Alle assets voor de Q2 social media campagne overdragen aan het team.',
-    deadline: '2026-04-20',
+    id: 'task-avonturia',
+    category: 'Projecten en opdrachten',
+    title: 'Avonturia Shop updaten',
+    description: 'Content en visuals voor Avonturia winkelcommunicatie bijwerken.',
+    done: false,
+  },
+  {
+    id: 'task-puppy-kitten',
+    category: 'Projecten en opdrachten',
+    title: 'Puppy & Kitten POS Materiaal',
+    description: 'POS-materiaal voor Puppy & Kitten assortiment afronden en aanleveren.',
+    done: false,
+  },
+  {
+    id: 'task-interzoo',
+    category: 'Projecten en opdrachten',
+    title: 'InterZoo Mini brochure',
+    description: 'Mini brochure ontwerpen en drukklaar aanleveren voor InterZoo.',
+    done: false,
+  },
+  {
+    id: 'task-brokkenenzo',
+    category: 'Projecten en opdrachten',
+    title: 'Brokken&Zo display suggestie',
+    description: 'Display-suggestie uitwerken voor Brokken&Zo.',
+    done: false,
+  },
+  {
+    id: 'task-gezondheidsplein',
+    category: 'Projecten en opdrachten',
+    title: 'Gezondheidsplein Accustraat 1',
+    description: 'Signing en communicatiemateriaal voor Gezondheidsplein Accustraat 1.',
+    done: false,
+  },
+  {
+    id: 'task-giveaway',
+    category: 'Projecten en opdrachten',
+    title: 'Give Away Actie PC en VC',
+    description: 'Give away actie opzetten voor PC en VC kanalen.',
     done: false,
   },
 ];
@@ -91,20 +129,41 @@ export function useOverdracht() {
         .select('*');
 
       if (data && data.length > 0) {
-        setItems(prev =>
-          prev.map(item => {
-            const dbItem = data.find(d => d.id === item.id);
+        setItems(prev => {
+          const updatedItems = prev.map(item => {
+            const dbItem = data.find((d: any) => d.id === item.id);
             if (dbItem) {
               return {
                 ...item,
                 done: dbItem.done,
                 checked_by: dbItem.checked_by ?? undefined,
                 checked_date: dbItem.checked_date ?? undefined,
+                title: dbItem.title || item.title,
+                description: dbItem.description || item.description,
               };
             }
             return item;
-          })
-        );
+          });
+
+          // Add custom items from DB that aren't in placeholder
+          const customItems = data
+            .filter((d: any) => d.custom && !prev.find(p => p.id === d.id))
+            .map((d: any) => ({
+              id: d.id,
+              category: d.category || 'Projecten en opdrachten',
+              title: d.title || '',
+              description: d.description || '',
+              deadline: d.deadline || undefined,
+              done: d.done,
+              checked_by: d.checked_by ?? undefined,
+              checked_date: d.checked_date ?? undefined,
+              priority: d.priority || 'Gemiddeld',
+              involved: d.involved || undefined,
+              custom: true,
+            }));
+
+          return [...updatedItems, ...customItems];
+        });
       }
     };
     loadItems();
@@ -119,18 +178,38 @@ export function useOverdracht() {
         (payload) => {
           const updated = payload.new as any;
           if (updated) {
-            setItems(prev =>
-              prev.map(item =>
-                item.id === updated.id
-                  ? {
-                      ...item,
-                      done: updated.done,
-                      checked_by: updated.checked_by ?? undefined,
-                      checked_date: updated.checked_date ?? undefined,
-                    }
-                  : item
-              )
-            );
+            setItems(prev => {
+              const exists = prev.find(i => i.id === updated.id);
+              if (exists) {
+                return prev.map(item =>
+                  item.id === updated.id
+                    ? {
+                        ...item,
+                        done: updated.done,
+                        checked_by: updated.checked_by ?? undefined,
+                        checked_date: updated.checked_date ?? undefined,
+                        title: updated.title || item.title,
+                        description: updated.description || item.description,
+                      }
+                    : item
+                );
+              } else if (updated.custom) {
+                return [...prev, {
+                  id: updated.id,
+                  category: updated.category || 'Projecten en opdrachten',
+                  title: updated.title || '',
+                  description: updated.description || '',
+                  deadline: updated.deadline || undefined,
+                  done: updated.done,
+                  checked_by: updated.checked_by ?? undefined,
+                  checked_date: updated.checked_date ?? undefined,
+                  priority: updated.priority || 'Gemiddeld',
+                  involved: updated.involved || undefined,
+                  custom: true,
+                }];
+              }
+              return prev;
+            });
           }
         }
       )
@@ -172,6 +251,53 @@ export function useOverdracht() {
     [userName]
   );
 
+  const updateItemField = useCallback(
+    async (id: string, field: 'title' | 'description', value: string) => {
+      setItems(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, [field]: value } : item
+        )
+      );
+
+      await supabase
+        .from('overdracht_items')
+        .upsert({
+          id,
+          [field]: value,
+          updated_at: new Date().toISOString(),
+        });
+    },
+    []
+  );
+
+  const addItem = useCallback(
+    async (item: Omit<OverdrachtItem, 'done' | 'checked_by' | 'checked_date'>) => {
+      const newItem: OverdrachtItem = {
+        ...item,
+        done: false,
+        custom: true,
+      };
+
+      setItems(prev => [...prev, newItem]);
+
+      await supabase
+        .from('overdracht_items')
+        .upsert({
+          id: item.id,
+          done: false,
+          custom: true,
+          category: item.category,
+          title: item.title,
+          description: item.description,
+          deadline: item.deadline || null,
+          priority: item.priority || 'Gemiddeld',
+          involved: item.involved || null,
+          updated_at: new Date().toISOString(),
+        });
+    },
+    []
+  );
+
   const doneCount = items.filter(i => i.done).length;
   const xp = doneCount * 10;
   const totalItems = items.length;
@@ -179,7 +305,6 @@ export function useOverdracht() {
   const progress = totalItems > 0 ? (doneCount / 20) * 100 : 0;
   const footerStatus = getFooterStatus(doneCount, totalItems);
 
-  // Track previous done count for milestone detection
   useEffect(() => {
     prevDoneCountRef.current = doneCount;
   }, [doneCount]);
@@ -206,6 +331,8 @@ export function useOverdracht() {
     level,
     progress,
     toggleItem,
+    updateItemField,
+    addItem,
     userName,
     setUserName,
     reset,
