@@ -129,6 +129,7 @@ const PLACEHOLDER_ITEMS: OverdrachtItem[] = [
     category: 'Projecten en opdrachten',
     title: 'Gezondheidsplein Accustraat 1',
     description: 'Signing en communicatiemateriaal voor Gezondheidsplein Accustraat 1.',
+    subCategory: 'Gezondheidsplein',
     done: false,
   },
   {
