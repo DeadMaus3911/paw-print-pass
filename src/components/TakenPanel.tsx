@@ -100,6 +100,7 @@ const TakenPanel: React.FC<TakenPanelProps> = ({
   const [milestones, setMilestones] = useState<MilestoneBanner[]>([]);
   const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const shownMilestonesRef = useRef<Set<number>>(new Set());
 
   const allCategories = ['Alle', ...categories];
