@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   xp: number;
@@ -8,6 +9,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ xp, progress, levelLabel, levelEmoji }) => {
+  const { signOut } = useAuth();
   return (
     <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-card">
       <div className="max-w-[860px] mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -19,7 +21,16 @@ const Header: React.FC<HeaderProps> = ({ xp, progress, levelLabel, levelEmoji })
           </div>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-xs font-semibold">{levelEmoji} {xp} XP · {levelLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold">{levelEmoji} {xp} XP · {levelLabel}</span>
+            <button
+              onClick={signOut}
+              className="text-xs opacity-70 hover:opacity-100 underline transition-opacity"
+              aria-label="Uitloggen"
+            >
+              Uitloggen
+            </button>
+          </div>
           <div className="w-32 h-2.5 bg-primary-foreground/20 overflow-hidden">
             <div
               className="h-full bg-accent"
