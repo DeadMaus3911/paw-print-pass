@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const CORRECT_PIN = '1963';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VaultEntry {
   icon: string;
@@ -100,18 +99,33 @@ const VAULT: VaultEntry[] = [
 const PinPad: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
+  const [checking, setChecking] = useState(false);
 
-  const handleDigit = (d: string) => {
-    if (pin.length >= 4) return;
+  const handleDigit = async (d: string) => {
+    if (pin.length >= 4 || checking) return;
     const newPin = pin + d;
     setPin(newPin);
     setError(false);
     if (newPin.length === 4) {
-      if (newPin === CORRECT_PIN) {
-        onSuccess();
-      } else {
+      setChecking(true);
+      try {
+        const { data, error: dbError } = await supabase
+          .from('overdracht_config')
+          .select('value')
+          .eq('key', 'vault_pin')
+          .maybeSingle();
+        if (dbError) throw dbError;
+        if (data && newPin === data.value) {
+          onSuccess();
+        } else {
+          setError(true);
+          setTimeout(() => { setPin(''); setError(false); }, 800);
+        }
+      } catch {
         setError(true);
         setTimeout(() => { setPin(''); setError(false); }, 800);
+      } finally {
+        setChecking(false);
       }
     }
   };
